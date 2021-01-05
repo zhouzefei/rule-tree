@@ -1,7 +1,7 @@
 import React from 'react';
 import { DropTarget } from 'react-dnd';
 import Link from './Link';
-import { RELATION_WIDTH, COMPONENT_HEIGHT, COMPONENT_SPACE_VERTICAL, COMPONENT_SPACE_HORIZONTAL } from "./constants";
+import { RELATION_WIDTH, COMPONENT_HEIGHT, COMPONENT_SPACE_VERTICAL, COMPONENT_SPACE_HORIZONTAL } from "./constants/size";
 
 const innerStyle = {
   width: RELATION_WIDTH,

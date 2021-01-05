@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Select, Input, Icon, Button } from "antd";
+import React, { useRef } from "react";
+import { Select, Icon, Button } from "antd";
 import { hierarchy } from 'd3-hierarchy';
 import { DndProvider, createDndContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
@@ -7,17 +7,35 @@ import get from 'lodash/get';
 import Drag, { UnDrag } from './Drag';
 import Drop from './Drop';
 import Link from "./Link";
+import Operators from "./constants/operators";
+import { RELATION_WIDTH, COMPONENT_HEIGHT, COMPONENT_SPACE_VERTICAL, COMPONENT_SPACE_HORIZONTAL, COMPONENT_MARGIN } from "./constants/size";
 import "./index.less";
-import { RELATION_WIDTH, COMPONENT_HEIGHT, COMPONENT_SPACE_VERTICAL, COMPONENT_SPACE_HORIZONTAL, COMPONENT_MARGIN } from "./constants";
 
 const { Option } = Select;
-const canDrag = true;
-const canRootChange = true;
 
 const DndContext = createDndContext(HTML5Backend);
 const dndType = "dndType-0";
 
-export default () => {
+export default (props) => {
+    const {
+            relations=[{
+                name:"&&",
+                dName:"与",
+                enDName:"And"
+            },{
+                name:"||",
+                dName:"或",
+                enDName:"Or"
+            }],
+            relationName, // 根节点name
+            value,
+            onChange, // 表单变更事件
+            fields,
+            nameKeys, // 不符合默认的name进行映射转换
+            canDrag=true,  // 是否可拖拽
+            canRootChange=true // 根节点是否可变更
+        } = props || [];
+
     // key的默认值
     const keyDefault = useRef(0);
 
@@ -62,7 +80,7 @@ export default () => {
     const handleAddCondition = (data) => {
         const children = get(value, data.parentPath);
         children.push({});
-        setValue({...value})
+        onChange && onChange({...value})
     };
 
     // 新增条件组
@@ -71,7 +89,7 @@ export default () => {
         children.push({
             children: [{}]
         });
-        setValue({...value})
+        onChange && onChange({...value})
     };
 
     // 删除事件
@@ -82,7 +100,7 @@ export default () => {
         }else{
             const deleteParent = get(value, data.parentPath);
             deleteParent.splice(data.index, 1);
-            setValue({...value});
+            onChange && onChange({...value});
         }
     };
     const handleDeleteGroup = (node) => {
@@ -99,7 +117,7 @@ export default () => {
           var dp = get(tempValue, deleteParent.data.parentPath);
           dp.splice(deleteParent.data.index, 1);
         }
-        setValue(tempValue);
+        onChange && onChange(tempValue);
     };
     const handleDeleteSingleGroup = (node) => {
         if (!node.parent || !node.parent.children) {
@@ -118,7 +136,7 @@ export default () => {
         const dropParent = get(value, dropProps.data.parentPath); // 删掉
         const dragItem = parent.splice(dragProps.data.index, 1)[0]; // 添加
         dropParent.splice(dropProps.data.index, 0, dragItem);
-        setValue({...value})
+        onChange && onChange({...value})
     };
 
     // 计算坐标定位
@@ -151,7 +169,7 @@ export default () => {
         const DragItem = canDrag ? Drag : UnDrag;
         nodes.forEach((node, nindex)=>{
             const { data, x, y, parent } = node;
-            const { type, index, path, key } = data || {};
+            const { type, index, parentPath, key } = data || {};
             // 根节点
             if(!parent){
                 const style = {
@@ -167,16 +185,35 @@ export default () => {
                             canRootChange ?
                             <Select
                                 style={style}
-                                value="&"
-                                placeholder="请选择"
+                                placeholder="选择"
                                 disabled={!canDrag}
+                                value={value[relationName] || undefined}
+                                onChange={(e)=>{
+                                    onChange &&
+                                    onChange({
+                                       ...value,
+                                       [relationName]:e
+                                    });
+                                }}
                             >
-                                <Option value="&">与</Option>
+                                {
+                                   relations &&
+                                   !!relations.length &&
+                                   relations.map(relation=>{
+                                       return (
+                                           <Option value={relation.name} key={relation.name}>{relation.dName}</Option>
+                                       )
+                                   })
+                               }
                             </Select> :
                             <Button
                                 style={style}
                             >
-                                与
+                                {
+                                    relations &&
+                                    !!relations.length &&
+                                    relations[0].dName
+                                }
                             </Button>
                         }
                     </div>
@@ -219,11 +256,24 @@ export default () => {
                                     width: RELATION_WIDTH,
                                     minWidth: RELATION_WIDTH
                                 }}
-                                value="&"
-                                placeholder="请选择"
+                                placeholder="选择"
                                 disabled={!canDrag}
+                                value={get(value,parentPath)[index][relationName] || undefined}
+                                onChange={(e)=>{
+                                    const valueTemp = {...value};
+                                    get(valueTemp,parentPath)[index][relationName] = e;
+                                    onChange && onChange(valueTemp);
+                                }}
                             >
-                                <Option value="&">与</Option>
+                               {
+                                   relations &&
+                                   !!relations.length &&
+                                   relations.map(relation=>{
+                                       return (
+                                           <Option value={relation.name} key={relation.name}>{relation.dName}</Option>
+                                       )
+                                   })
+                               }
                             </Select>
                         </DragItem>
                     )
@@ -238,31 +288,95 @@ export default () => {
                             key={getHierarchyId(key, 'leaf')}
                         >
                             <>
-                                <Select
-                                    placeholder="请选择"
-                                    style={{
-                                        "width":"160px",
-                                        marginLeft: nindex ? COMPONENT_MARGIN : 0
-                                    }}
-                                >
-                                    <Option value="system">系统字段</Option>
-                                </Select>
-                                <Select
-                                    placeholder="请选择"
-                                    style={{
-                                        "width":"160px",
-                                        marginLeft: nindex ? COMPONENT_MARGIN : 0
-                                    }}
-                                >
-                                    <Option value=">">大于</Option>
-                                </Select>
-                                <Input
-                                    placeholder="请输入数量"
-                                    style={{
-                                        "width":"160px",
-                                        marginLeft: nindex ? COMPONENT_MARGIN : 0
-                                    }}
-                                />
+                                {
+                                   fields(data).map((field,i)=>{
+                                        const { onChange:fieldChange, style, name } = field.props;
+                                        const valueTemp = JSON.parse(JSON.stringify(value));
+                                        const curValue = get(valueTemp,parentPath)[index];
+                                        const {
+                                            property: propertyName = "property",
+                                            propertyDataType: propertyDataTypeName = "propertyDataType",
+                                            operator: operatorKeyName = "operator",
+                                            type: typeKeyName = "type",
+                                            value: valueName = "value",
+                                            enumValue: enumValueName = "enumValue"
+                                        } = nameKeys || {};
+
+                                        // 对数据进行联动过滤
+                                        let children = {};
+                                        if(name === operatorKeyName){
+                                            // 将操作符根据字段类型过滤
+                                            children = {
+                                                children: Operators(curValue[propertyDataTypeName]).map(v=>{
+                                                    return React.createElement(Option, {
+                                                        value: v.name,
+                                                        key: v.name
+                                                    },v.dName)
+                                                })
+                                            }
+                                        };
+
+                                        // 字段类型为枚举时
+                                        if(curValue[propertyDataTypeName] === "ENUM"){
+                                            // 选择变量常量选项不展示
+                                            if([typeKeyName,valueName].includes(name)){
+                                                return null;
+                                            }
+                                        }else{
+                                            // 选择变量时
+                                            if(curValue[typeKeyName] && curValue[typeKeyName] === "context"){
+                                                if([valueName].includes(name)){
+                                                    return null;
+                                                }
+                                            }else{ // 选择常量时
+                                                if([enumValueName].includes(name)){
+                                                    return null;
+                                                }
+                                            }
+                                        }
+
+                                        // 操作符为 为空、不为空
+                                        if(["isnull","notnull"].includes(curValue[operatorKeyName])){
+                                            if([typeKeyName,valueName,enumValueName].includes(name)){
+                                                return null;
+                                            }
+                                        }
+
+                                        return React.cloneElement(field,{
+                                            key:i,
+                                            value: curValue[name] || undefined,
+                                            onChange:(e,_this)=>{
+                                                // 触发自定义事件
+                                                fieldChange && fieldChange(e,_this,parentPath,index);
+
+                                                // 当变更第一列字段例如系统字段时，清空其他数据源
+                                                if(i === 0){
+                                                    Object.keys(curValue).forEach(v => curValue[v] = "");
+                                                };
+
+                                                // 设置当前值
+                                                curValue[name] = e.target ? e.target.value : e;
+
+                                                // 设置字段类型
+                                                if(name === propertyName){
+                                                    curValue[propertyDataTypeName] = _this.props.type;
+                                                };
+
+                                                if(name===operatorKeyName && ["isnull","notnull"].includes(e)){
+                                                    curValue[typeKeyName] = "";
+                                                    curValue[valueName] = "";
+                                                }
+                                                onChange && onChange(valueTemp);
+                                            },
+                                            ...children,
+                                            style:{
+                                                "width":"160px",
+                                                "marginLeft": nindex ? COMPONENT_MARGIN : 0,
+                                                ...style
+                                            }
+                                        })
+                                    })
+                                }
                             </>
                             {
                                 canDrag &&
@@ -349,20 +463,13 @@ export default () => {
         }
     };
 
-
-    // 基础数据格式
-    const [ value, setValue ] = useState({children: [{}]});
-
     // 设置key
-    const valueTemp = {...value};
-    setKey(valueTemp, {});
+    const valueTemp = JSON.parse(JSON.stringify(value));
     const finalValue = Object.assign({
         type:"relation",
         path:['relation'],
-    },valueTemp);
+    },setKey(valueTemp, {}));
     finalValue.children = addDropAreaAndOperation(valueTemp.children, ['children'], canDrag, 0)
-
-    console.log("finalValue",finalValue)
 
     const hierarchyData = hierarchy(finalValue);
     const { nodes, height } = buildNodes(hierarchyData,canDrag);

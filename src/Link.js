@@ -1,4 +1,4 @@
-import { COMPONENT_HEIGHT } from "./constants";
+import { COMPONENT_HEIGHT } from "./constants/size";
 
 export default (props) => {
     const { source, target } = props;

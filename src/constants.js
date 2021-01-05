@@ -1,0 +1,5 @@
+export const RELATION_WIDTH = 80;
+export const COMPONENT_HEIGHT = 40;
+export const COMPONENT_SPACE_VERTICAL = 16;
+export const COMPONENT_SPACE_HORIZONTAL = 38;
+export const COMPONENT_MARGIN = 10;

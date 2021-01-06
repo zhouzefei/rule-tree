@@ -36,6 +36,7 @@ export default (props) => {
             canRootChange=true // 根节点是否可变更
         } = props || [];
 
+
     // key的默认值
     const keyDefault = useRef(0);
 
@@ -369,6 +370,7 @@ export default (props) => {
                                                 onChange && onChange(valueTemp);
                                             },
                                             ...children,
+                                            disabled: !canDrag,
                                             style:{
                                                 "width":"160px",
                                                 "marginLeft": nindex ? COMPONENT_MARGIN : 0,
@@ -394,27 +396,29 @@ export default (props) => {
                         </DragItem>
                     )
                 }else{
-                    ele = (
-                        <div
-                            className="plus-wrap"
-                            style={{"top":x, "left":y}}
-                            key={getHierarchyId(key, 'action')}
-                            data-key={getHierarchyId(key, 'action')}
-                        >
-                            <Icon
-                                type="plus"
-                                onClick={()=>{
-                                    handleAddCondition(data);
-                                }}
-                            />
-                            <Icon
-                                type="plus-square"
-                                onClick={()=>{
-                                    handleAddGroup(data);
-                                }}
-                            />
-                        </div>
-                    )
+                    if(canDrag){
+                        ele = (
+                            <div
+                                className="plus-wrap"
+                                style={{"top":x, "left":y}}
+                                key={getHierarchyId(key, 'action')}
+                                data-key={getHierarchyId(key, 'action')}
+                            >
+                                <Icon
+                                    type="plus"
+                                    onClick={()=>{
+                                        handleAddCondition(data);
+                                    }}
+                                />
+                                <Icon
+                                    type="plus-square"
+                                    onClick={()=>{
+                                        handleAddGroup(data);
+                                    }}
+                                />
+                            </div>
+                        )
+                    }
                 }
                 result.push(ele);
             }

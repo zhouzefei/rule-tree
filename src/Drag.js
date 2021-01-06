@@ -71,17 +71,20 @@ export default DragSource((_ref2) => {
 
 
 export const UnDrag = (_ref3) => {
-    const {children, x, y } = _ref3;
+    const {children, x, y, data } = _ref3;
+    console.log(_ref3)
     return (
         <div
-        style={{
-            position: 'absolute',
-            left: x,
-            top: y,
-            display: 'flex',
-            alignItems: "center",
-            ...ALIGN_CENTER
-        }}>
+            className={data.type !== "relation" ? "condition" : ""}
+            style={{
+                position: 'absolute',
+                left: x,
+                top: y,
+                display: 'flex',
+                alignItems: "center",
+                ...ALIGN_CENTER
+            }}
+        >
             {children}
         </div>
     );

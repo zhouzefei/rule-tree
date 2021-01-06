@@ -18,10 +18,20 @@ const fieldList = [{
     type: "ENUM"
 }];
 
+// nameKeys={{
+//     "property":"property",
+//     "propertyDataType":"propertyDataType",
+//     "operator":"operator",
+//     "type":"type",
+//     "value":"value",
+//     "enumValue":"enumValue"
+// }}
 const RuleTreeDemo = () => {
     const [value,setValue] = useState({
         logicOperator: "||",
-        children: [{}]
+        children: [{},{},{},{
+            children:[{}]
+        }]
     });
 
     const onChange = (data) => {
@@ -33,14 +43,6 @@ const RuleTreeDemo = () => {
             relationName="logicOperator"
             value={value}
             onChange={onChange}
-            // nameKeys={{
-            //     "property":"property",
-            //     "propertyDataType":"propertyDataType",
-            //     "operator":"operator",
-            //     "type":"type",
-            //     "value":"value",
-            //     "enumValue":"enumValue"
-            // }}
             fields={()=>{
                 return (
                     [

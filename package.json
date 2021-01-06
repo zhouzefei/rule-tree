@@ -1,5 +1,5 @@
 {
-  "name": "rule-tree",
+  "name": "@tntx/rule-tree",
   "version": "1.0.1",
   "description": "规则树",
   "main": "./dist/index",

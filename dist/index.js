@@ -69,7 +69,8 @@ var _default = function _default(props) {
     dName: "或",
     enDName: "Or"
   }] : _ref$relations,
-      relationName = _ref.relationName,
+      _ref$relationName = _ref.relationName,
+      relationName = _ref$relationName === void 0 ? "logicOperator" : _ref$relationName,
       value = _ref.value,
       _onChange = _ref.onChange,
       fields = _ref.fields,
@@ -532,7 +533,7 @@ var _default = function _default(props) {
   return /*#__PURE__*/_react.default.createElement(_reactDnd.DndProvider, {
     manager: DndContext.dragDropManager
   }, /*#__PURE__*/_react.default.createElement("div", {
-    className: "rule-tree-content",
+    className: "tntx-rule-tree-content",
     style: {
       "position": "relative",
       "height": height + "px"

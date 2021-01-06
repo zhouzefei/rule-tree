@@ -27,7 +27,7 @@ export default (props) => {
                 dName:"或",
                 enDName:"Or"
             }],
-            relationName, // 根节点name
+            relationName="logicOperator", // 根节点name
             value,
             onChange, // 表单变更事件
             fields,
@@ -484,7 +484,7 @@ export default (props) => {
         <DndProvider
             manager={DndContext.dragDropManager}
         >
-            <div className="rule-tree-content" style={{"position":"relative","height":height+"px"}}>
+            <div className="tntx-rule-tree-content" style={{"position":"relative","height":height+"px"}}>
                 { createFields(flattenNodes, canDrag) }
                 {
                     flattenLinks.map((link,linkIndex)=>{

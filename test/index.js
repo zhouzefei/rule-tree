@@ -1,7 +1,7 @@
 import ReactDOM from "react-dom";
 import { useState } from "react";
 import { Select, Input } from "antd";
-import RuleTree from "../src";
+import RuleTree from "@tntd/rule-tree";
 
 const { Option } = Select;
 const fieldList = [{

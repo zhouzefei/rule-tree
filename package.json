@@ -1,6 +1,6 @@
 {
-  "name": "@tntd/rule-tree",
-  "version": "1.0.0",
+  "name": "rule-tree",
+  "version": "1.0.1",
   "description": "规则树",
   "main": "./dist/index",
   "scripts": {
@@ -10,7 +10,15 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "antd": ">=3.20.1"
+    "antd": ">=3.20.1",
+    "lodash": "^4.17.20",
+    "react-dnd": "^9.3.2",
+    "react-dnd-html5-backend": "^9.3.2"
+  },
+  "dependencies": {
+    "@tntd/rule-tree": "^1.0.1",
+    "classnames": "^2.2.6",
+    "d3-hierarchy": "^2.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.1",
@@ -35,7 +43,10 @@
     "webpack": "^4.35.2",
     "webpack-bundle-analyzer": "^3.7.0",
     "webpack-cli": "^3.3.5",
-    "webpack-dev-server": "^3.7.2"
+    "webpack-dev-server": "^3.7.2",
+    "lodash": "^4.17.20",
+    "react-dnd": "^9.3.2",
+    "react-dnd-html5-backend": "^9.3.2"
   },
   "author": "zefei.zhou",
   "license": "ISC",
@@ -51,13 +62,7 @@
       "last 1 safari version"
     ]
   },
-  "dependencies": {
-    "@aligov/gov-rule-tree": "0.0.12",
-    "classnames": "^2.2.6",
-    "d3": "^6.3.1",
-    "d3-hierarchy": "^2.0.0",
-    "lodash": "^4.17.20",
-    "react-dnd": "^9.3.2",
-    "react-dnd-html5-backend": "^9.3.2"
-  }
+  "files": [
+    "dist"
+  ]
 }

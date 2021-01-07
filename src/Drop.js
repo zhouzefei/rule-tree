@@ -49,44 +49,54 @@ const Drop = (_ref) => {
   );
 };
 
-export default DropTarget((_ref2) => {
-  const type = _ref2.type;
-  return type;
-}, {
-  canDrop: (drop, monitor) => {
-    const drag = monitor.getItem(); // 根节点不能放到子树中
-    let depthDiff = drop.node.depth - drag.node.depth;
+@DropTarget(
+    "box",
+    {
+    canDrop: (drop, monitor) => {
+        const drag = monitor.getItem(); // 根节点不能放到子树中
+        let depthDiff = drop.node.depth - drag.node.depth;
 
-    if (depthDiff > 0) {
-      var p = drop.node;
+        if (depthDiff > 0) {
+        var p = drop.node;
 
-      while (depthDiff--) {
-        p = p.parent;
-      }
+        while (depthDiff--) {
+            p = p.parent;
+        }
 
-      if (p === drag.node) {
-        return false;
-      }
+        if (p === drag.node) {
+            return false;
+        }
+        }
+
+        var cannot = (
+            drag.data.parentPath === drop.data.parentPath &&
+            (
+                drag.data.index === drop.data.index ||
+                drag.data.index + 1 === drop.data.index
+            )
+        );
+        return !cannot;
+    },
+    drop: function drop(props, monitor) {
+        var item = monitor.getItem();
+        props.onDrop(props, item);
+        return props;
     }
-
-    var cannot = (
-        drag.data.parentPath === drop.data.parentPath &&
-        (
-            drag.data.index === drop.data.index ||
-            drag.data.index + 1 === drop.data.index
+    },
+    (connect, monitor) => {
+        return {
+            connectDropTarget: connect.dropTarget(),
+            isOver: monitor.isOver(),
+            canDrop: monitor.canDrop()
+        };
+    }
+)
+export default class extends React.PureComponent{
+    render(){
+        return (
+            <Drop {...this.props}/>
         )
-    );
-    return !cannot;
-  },
-  drop: function drop(props, monitor) {
-    var item = monitor.getItem();
-    props.onDrop(props, item);
-    return props;
-  }
-}, function (connect, monitor) {
-  return {
-    connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver(),
-    canDrop: monitor.canDrop()
-  };
-})(Drop);
+    }
+}
+
+

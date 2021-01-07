@@ -49,26 +49,31 @@ const Drag = (_ref) => {
   )
 };
 
-export default DragSource((_ref2) => {
-  var type = _ref2.type;
-  return type;
-}, {
-  beginDrag: (props) => {
-    console.log("bigin")
-    return props;
-  },
-  endDrag: (props) => {
-    console.log("end")
-    return props;
-  }
-}, (connect, monitor) => {
-  return {
-    connectDragSource: connect.dragSource(),
-    connectDragPreview: connect.dragPreview(),
-    isDragging: monitor.isDragging()
-  };
-})(Drag);
-
+@DragSource(
+    "box",
+    {
+    beginDrag: (props) => {
+        console.log("bigin")
+        return props;
+    },
+    endDrag: (props) => {
+        console.log("end")
+        return props;
+    }
+    },
+    (connect, monitor) => {
+        return {
+            connectDragSource: connect.dragSource(),
+            connectDragPreview: connect.dragPreview(),
+            isDragging: monitor.isDragging()
+        };
+    }
+)
+export default class extends React.PureComponent{
+    render(){
+        return <Drag {...this.props}/>
+    }
+};
 
 export const UnDrag = (_ref3) => {
     const {children, x, y, data } = _ref3;

@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { Select, Icon, Button } from "antd";
 import { hierarchy } from 'd3-hierarchy';
-import { DndProvider, createDndContext } from 'react-dnd';
+import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import get from 'lodash/get';
 import Drag, { UnDrag } from './Drag';
@@ -10,38 +10,22 @@ import Link from "./Link";
 import Operators from "./constants/operators";
 import { RELATION_WIDTH, COMPONENT_HEIGHT, COMPONENT_SPACE_VERTICAL, COMPONENT_SPACE_HORIZONTAL, COMPONENT_MARGIN } from "./constants/size";
 import "./index.less";
+import { render } from "less";
 
 const { Option } = Select;
 
-const DndContext = createDndContext(HTML5Backend);
+// const DndContext = DragDropContext(HTML5Backend);
 const dndType = "dndType-0";
-
-export default (props) => {
-    const {
-            relations=[{
-                name:"&&",
-                dName:"与",
-                enDName:"And"
-            },{
-                name:"||",
-                dName:"或",
-                enDName:"Or"
-            }],
-            relationName="logicOperator", // 根节点name
-            value,
-            onChange, // 表单变更事件
-            fields,
-            nameKeys, // 不符合默认的name进行映射转换
-            canDrag=true,  // 是否可拖拽
-            canRootChange=true // 根节点是否可变更
-        } = props || [];
-
-
-    // key的默认值
-    const keyDefault = useRef(0);
+@DragDropContext(HTML5Backend)
+export default class extends React.PureComponent{
+    constructor(props){
+        super(props);
+        // key的默认值
+        this.keyDefault = 0;
+    }
 
     // 格式化节点树
-    const addDropAreaAndOperation = (children, parentPath, canDrag, level) => {
+    addDropAreaAndOperation = (children, parentPath, canDrag, level) => {
         if(!children){
             children = [];
         }
@@ -59,7 +43,7 @@ export default (props) => {
                 });
                 if(child.children){
                     node.type = "relation";
-                    node.children = addDropAreaAndOperation(child.children, path.concat(['children']), canDrag, level+1)
+                    node.children = this.addDropAreaAndOperation(child.children, path.concat(['children']), canDrag, level+1)
                     path.push("relation")
                 }
                 result.push(node);
@@ -78,14 +62,16 @@ export default (props) => {
     };
 
     // 新增条件
-    const handleAddCondition = (data) => {
+    handleAddCondition = (data) => {
+        const { value, onChange } = this.props;
         const children = get(value, data.parentPath);
         children.push({});
         onChange && onChange({...value})
     };
 
     // 新增条件组
-    const handleAddGroup = (data) => {
+    handleAddGroup = (data) => {
+        const { value, onChange } = this.props;
         const children = get(value, data.parentPath);
         children.push({
             children: [{}]
@@ -94,17 +80,20 @@ export default (props) => {
     };
 
     // 删除事件
-    const handleDelete = (data,node) => {
+    handleDelete = (data,node) => {
+        const { value, onChange } = this.props;
         // 只剩下两个的场景，需要移除children上一层
         if(node.parent.children.length === 2){
-            handleDeleteSingleGroup(node);
+            this.handleDeleteSingleGroup(node);
         }else{
             const deleteParent = get(value, data.parentPath);
             deleteParent.splice(data.index, 1);
             onChange && onChange({...value});
         }
     };
-    const handleDeleteGroup = (node) => {
+
+    handleDeleteGroup = (node) => {
+        const { value, onChange } = this.props;
         const tempValue = {...value};
         const deleteParent = node.parent;
         const deleteGrandPa = deleteParent.parent;
@@ -120,19 +109,21 @@ export default (props) => {
         }
         onChange && onChange(tempValue);
     };
-    const handleDeleteSingleGroup = (node) => {
+
+    handleDeleteSingleGroup = (node) => {
         if (!node.parent || !node.parent.children) {
             return;
         }
         if (node.parent.children.length === 2) {
             const parent = node.parent;
-            handleDeleteGroup(node);
-            handleDeleteSingleGroup(parent);
+            this.handleDeleteGroup(node);
+            this.handleDeleteSingleGroup(parent);
         }
     };
 
     // 拖拽回调
-    const handleDrop = (dropProps, dragProps) => {
+    handleDrop = (dropProps, dragProps) => {
+        const { value, onChange } = this.props;
         const parent = get(value, dragProps.data.parentPath);
         const dropParent = get(value, dropProps.data.parentPath); // 删掉
         const dragItem = parent.splice(dragProps.data.index, 1)[0]; // 添加
@@ -141,7 +132,7 @@ export default (props) => {
     };
 
     // 计算坐标定位
-    const buildNodes = (root, canDrag) => {
+    buildNodes = (root, canDrag) => {
         let [leafCount, height] = [0, 0];
         const nodes = root.eachAfter(function (d) {
             d.y = d.depth * (RELATION_WIDTH + COMPONENT_SPACE_HORIZONTAL + (canDrag ? COMPONENT_HEIGHT : 0));
@@ -165,7 +156,25 @@ export default (props) => {
     };
 
     // dom field渲染
-    const createFields = (nodes, canDrag) => {
+    createFields = (nodes, canDrag) => {
+        const {
+            relations=[{
+                name:"&&",
+                dName:"与",
+                enDName:"And"
+            },{
+                name:"||",
+                dName:"或",
+                enDName:"Or"
+            }],
+            relationName="logicOperator", // 根节点name
+            value,
+            onChange, // 表单变更事件
+            fields,
+            nameKeys, // 不符合默认的name进行映射转换
+            canRootChange=true // 根节点是否可变更
+        } = this.props || [];
+
         const result = [];
         const DragItem = canDrag ? Drag : UnDrag;
         nodes.forEach((node, nindex)=>{
@@ -181,7 +190,7 @@ export default (props) => {
                     top: x + COMPONENT_MARGIN / 2
                 };
                 result.push(
-                    <div key={getHierarchyId(key,'root')}>
+                    <div key={this.getHierarchyId(key,'root')}>
                         {
                             canRootChange ?
                             <Select
@@ -232,10 +241,10 @@ export default (props) => {
                             y={dropX}
                             node={node}
                             data={data}
-                            onDrop={handleDrop}
+                            onDrop={this.handleDrop}
                             canDrag={canDrag}
                             type={dndType}
-                            key={getHierarchyId(key, 'drop')}
+                            key={this.getHierarchyId(key, 'drop')}
                         >
                         </Drop>
                     );
@@ -250,7 +259,7 @@ export default (props) => {
                             node={node}
                             data={data}
                             type={dndType}
-                            key={getHierarchyId(key, 'relation')}
+                            key={this.getHierarchyId(key, 'relation')}
                         >
                              <Select
                                 style={{
@@ -286,7 +295,7 @@ export default (props) => {
                             node={node}
                             data={data}
                             type={dndType}
-                            key={getHierarchyId(key, 'leaf')}
+                            key={this.getHierarchyId(key, 'leaf')}
                         >
                             <>
                                 {
@@ -389,7 +398,7 @@ export default (props) => {
                                         cursor: 'pointer',
                                     }}
                                     onClick={()=>{
-                                        handleDelete(data,node)
+                                        this.handleDelete(data,node)
                                     }}
                                 />
                             }
@@ -401,19 +410,18 @@ export default (props) => {
                             <div
                                 className="plus-wrap"
                                 style={{"top":x, "left":y}}
-                                key={getHierarchyId(key, 'action')}
-                                data-key={getHierarchyId(key, 'action')}
+                                key={this.getHierarchyId(key, 'action')}
                             >
                                 <Icon
                                     type="plus"
                                     onClick={()=>{
-                                        handleAddCondition(data);
+                                        this.handleAddCondition(data);
                                     }}
                                 />
                                 <Icon
                                     type="plus-square"
                                     onClick={()=>{
-                                        handleAddGroup(data);
+                                        this.handleAddGroup(data);
                                     }}
                                 />
                             </div>
@@ -427,7 +435,7 @@ export default (props) => {
     };
 
     // 获取id
-    const getHierarchyId = (...args) => {
+    getHierarchyId = (...args) => {
         for (var _len = args.length, ids = new Array(_len), _key = 0; _key < _len; _key++) {
           ids[_key] = args[_key];
         }
@@ -435,23 +443,23 @@ export default (props) => {
     };
 
     // 设置唯一性
-    const getUniqKey = (key, keyMap) => {
+    getUniqKey = (key, keyMap) => {
         if(key in keyMap){
             const k = key + 1;
-            return getUniqKey(k,keyMap);
+            return this.getUniqKey(k,keyMap);
         }
         return key;
     };
 
     // 设置key
-    const setKey = (data, keyMap) => {
+    setKey = (data, keyMap) => {
         const createKey = (v) => {
             if(!(v && v.key)){
-                v.key = getUniqKey(keyDefault.current, keyMap)
+                v.key = this.getUniqKey(this.keyDefault, keyMap)
             }
             keyMap[v.key] = 1;
             if(v && v.children && v.children.length){
-                setKey(v.children, keyMap);
+                this.setKey(v.children, keyMap);
             }
         };
         if(Array.isArray(data)){
@@ -467,25 +475,28 @@ export default (props) => {
         }
     };
 
-    // 设置key
-    const valueTemp = JSON.parse(JSON.stringify(value));
-    const finalValue = Object.assign({
-        type:"relation",
-        path:['relation'],
-    },setKey(valueTemp, {}));
-    finalValue.children = addDropAreaAndOperation(valueTemp.children, ['children'], canDrag, 0)
+    render(){
+        const {
+            value,
+            canDrag=true,  // 是否可拖拽
+        } = this.props || [];
 
-    const hierarchyData = hierarchy(finalValue);
-    const { nodes, height } = buildNodes(hierarchyData,canDrag);
-    var flattenNodes = nodes.descendants();
-    var flattenLinks = nodes.links();
+        // 设置key
+        const valueTemp = JSON.parse(JSON.stringify(value));
+        const finalValue = Object.assign({
+            type:"relation",
+            path:['relation'],
+        },this.setKey(valueTemp, {}));
+        finalValue.children = this.addDropAreaAndOperation(valueTemp.children, ['children'], canDrag, 0)
 
-    return (
-        <DndProvider
-            manager={DndContext.dragDropManager}
-        >
+        const hierarchyData = hierarchy(finalValue);
+        const { nodes, height } = this.buildNodes(hierarchyData,canDrag);
+        var flattenNodes = nodes.descendants();
+        var flattenLinks = nodes.links();
+
+        return (
             <div className="tntx-rule-tree-content" style={{"position":"relative","height":height+"px"}}>
-                { createFields(flattenNodes, canDrag) }
+                { this.createFields(flattenNodes, canDrag) }
                 {
                     flattenLinks.map((link,linkIndex)=>{
                         const { source,target } = link;
@@ -500,8 +511,7 @@ export default (props) => {
                         };
                         return (
                             <div
-                                key={getHierarchyId(sourceKey,targetKey)}
-                                data-key={getHierarchyId(sourceKey,targetKey)}
+                                key={this.getHierarchyId(sourceKey,targetKey)}
                             >
                                 <Link
                                     source={{
@@ -518,6 +528,6 @@ export default (props) => {
                     })
                 }
             </div>
-        </DndProvider>
-    )
+        )
+    }
 }
